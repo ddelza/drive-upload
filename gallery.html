@@ -11,130 +11,79 @@
       -webkit-user-select: none; -moz-user-select: none; user-select: none;
       -webkit-touch-callout: none;
     }
-
     :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --blue: #4f8ef7;
-      --blue-dark: #2563eb;
-      --muted: #94a3b8;
-      --border: #334155;
+      --bg: #0f172a; --card: #1e293b; --blue: #4f8ef7;
+      --muted: #94a3b8; --border: #334155;
     }
-
     body {
-      background: var(--bg);
-      color: #f1f5f9;
+      background: var(--bg); color: #f1f5f9;
       font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', 'Segoe UI', sans-serif;
       min-height: 100vh;
     }
 
     /* ── 헤더 ── */
     header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      position: sticky; top: 0; z-index: 100;
       background: rgba(15,23,42,0.95);
       backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
       padding: 12px 16px;
     }
-
     .header-top {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       margin-bottom: 10px;
     }
     .header-top h1 { font-size: 1.1rem; font-weight: 700; }
     .badge {
-      font-size: 0.75rem;
-      color: var(--muted);
-      background: var(--card);
-      padding: 4px 10px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      white-space: nowrap;
+      font-size: 0.75rem; color: var(--muted);
+      background: var(--card); padding: 4px 10px;
+      border-radius: 999px; border: 1px solid var(--border); white-space: nowrap;
     }
 
-    /* ── 폴더 드롭다운 ── */
+    /* ── 폴더 바 ── */
     .folder-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      overflow-x: auto;
-      scrollbar-width: none;
-      -ms-overflow-style: none;
-      padding-bottom: 2px;
+      display: flex; align-items: center; gap: 8px;
+      overflow-x: auto; scrollbar-width: none;
     }
     .folder-bar::-webkit-scrollbar { display: none; }
-
-    .folder-select-wrap {
-      position: relative;
-      flex-shrink: 0;
-    }
+    .folder-select-wrap { position: relative; flex-shrink: 0; }
     .folder-select-wrap::after {
-      content: '▾';
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      pointer-events: none;
-      color: var(--muted);
-      font-size: 0.75rem;
+      content: '▾'; position: absolute; right: 10px; top: 50%;
+      transform: translateY(-50%); pointer-events: none;
+      color: var(--muted); font-size: 0.75rem;
     }
     select#folderSelect {
-      appearance: none;
-      -webkit-appearance: none;
-      background: var(--card);
-      border: 1px solid var(--border);
-      color: #f1f5f9;
-      font-size: 0.85rem;
-      font-weight: 600;
-      padding: 7px 28px 7px 12px;
-      border-radius: 10px;
-      cursor: pointer;
-      outline: none;
+      appearance: none; -webkit-appearance: none;
+      background: var(--card); border: 1px solid var(--border);
+      color: #f1f5f9; font-size: 0.85rem; font-weight: 600;
+      padding: 7px 28px 7px 12px; border-radius: 10px;
+      cursor: pointer; outline: none; max-width: 220px;
       transition: border-color 0.2s;
-      max-width: 220px;
     }
     select#folderSelect:focus { border-color: var(--blue); }
-
-    /* 폴더 칩 (보조 — 빠른 이동용) */
-    .folder-chips {
-      display: flex;
-      gap: 6px;
-      flex-shrink: 0;
-    }
+    .folder-chips { display: flex; gap: 6px; flex-shrink: 0; }
     .chip {
-      background: var(--card);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 0.78rem;
-      padding: 5px 12px;
-      border-radius: 999px;
-      cursor: pointer;
-      white-space: nowrap;
+      background: var(--card); border: 1px solid var(--border);
+      color: var(--muted); font-size: 0.78rem;
+      padding: 5px 12px; border-radius: 999px;
+      cursor: pointer; white-space: nowrap;
       transition: background 0.2s, color 0.2s, border-color 0.2s;
     }
-    .chip.active {
-      background: var(--blue);
-      border-color: var(--blue);
-      color: #fff;
-    }
+    .chip.active { background: var(--blue); border-color: var(--blue); color: #fff; }
 
-    /* ── 그리드 ── */
+    /* ── 그리드 (고정 비율 셀) ── */
     .gallery {
-      padding: 14px;
-      columns: 2;
-      column-gap: 10px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px; padding: 12px;
     }
-    @media (min-width: 600px)  { .gallery { columns: 3; } }
-    @media (min-width: 900px)  { .gallery { columns: 4; } }
-    @media (min-width: 1200px) { .gallery { columns: 5; } }
+    @media (min-width: 540px)  { .gallery { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 800px)  { .gallery { grid-template-columns: repeat(4, 1fr); } }
+    @media (min-width: 1100px) { .gallery { grid-template-columns: repeat(5, 1fr); } }
 
+    /* 스켈레톤 + 이미지 셀 */
     .gallery-item {
-      break-inside: avoid;
-      margin-bottom: 10px;
+      aspect-ratio: 1;
       border-radius: 12px;
       overflow: hidden;
       cursor: pointer;
@@ -142,40 +91,42 @@
       background: var(--card);
       border: 1px solid var(--border);
     }
+    /* 로딩 전 스켈레톤 shimmer */
+    .gallery-item.skeleton {
+      background: linear-gradient(90deg, #1e293b 25%, #263548 50%, #1e293b 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
     .gallery-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
       display: block;
-      width: 100%;
-      height: auto;
-      transition: transform 0.3s ease;
+      transition: transform 0.3s ease, opacity 0.3s ease;
       -webkit-user-drag: none;
       pointer-events: none;
+      opacity: 0;
     }
-    .gallery-item:hover img { transform: scale(1.04); }
+    .gallery-item img.loaded { opacity: 1; }
+    .gallery-item:hover img { transform: scale(1.06); }
+    /* 복사 방지 투명 오버레이 */
     .gallery-item::after { content: ''; position: absolute; inset: 0; }
-
     .video-badge {
-      position: absolute;
-      top: 8px; right: 8px;
-      background: rgba(0,0,0,0.6);
-      color: #fff;
-      font-size: 0.7rem;
-      padding: 3px 7px;
-      border-radius: 6px;
-      pointer-events: none;
+      position: absolute; top: 7px; right: 7px;
+      background: rgba(0,0,0,0.65); color: #fff;
+      font-size: 0.68rem; padding: 3px 7px;
+      border-radius: 6px; pointer-events: none; z-index: 1;
     }
 
-    /* ── 로딩 / 빈 상태 ── */
+    /* ── 상태 ── */
     .state-center {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 50vh;
-      gap: 14px;
-      color: var(--muted);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: 50vh; gap: 14px; color: var(--muted);
     }
     .spinner {
-      width: 38px; height: 38px;
+      width: 36px; height: 36px;
       border: 3px solid var(--border);
       border-top-color: var(--blue);
       border-radius: 50%;
@@ -185,80 +136,78 @@
 
     /* ── 라이트박스 ── */
     #lightbox {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 1000;
-      background: rgba(0,0,0,0.94);
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
+      display: none; position: fixed; inset: 0;
+      z-index: 1000; background: rgba(0,0,0,0.94);
+      align-items: center; justify-content: center; flex-direction: column;
     }
     #lightbox.open { display: flex; }
 
-    #lb-media {
-      max-width: 92vw;
-      max-height: 82vh;
-      object-fit: contain;
-      border-radius: 8px;
-      pointer-events: none;
-      -webkit-user-drag: none;
+    .lb-img-wrap {
+      position: relative;
+      max-width: 92vw; max-height: 82vh;
+      display: flex; align-items: center; justify-content: center;
     }
+    /* 저해상도 (즉시 표시) */
+    #lb-thumb {
+      max-width: 92vw; max-height: 82vh;
+      object-fit: contain; border-radius: 8px;
+      pointer-events: none; -webkit-user-drag: none;
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      filter: blur(0px);
+      transition: opacity 0.25s;
+    }
+    /* 고해상도 (로드 완료 후 fade-in) */
+    #lb-hires {
+      max-width: 92vw; max-height: 82vh;
+      object-fit: contain; border-radius: 8px;
+      pointer-events: none; -webkit-user-drag: none;
+      opacity: 0; transition: opacity 0.3s ease;
+      position: relative; z-index: 1;
+    }
+    #lb-hires.ready { opacity: 1; }
+
     #lb-video {
-      max-width: 92vw;
-      max-height: 82vh;
-      border-radius: 8px;
-      outline: none;
-      pointer-events: auto;
+      max-width: 92vw; max-height: 82vh;
+      border-radius: 8px; outline: none;
+      pointer-events: auto; display: none;
+    }
+    #lb-spinner {
+      position: absolute; z-index: 2;
+      width: 32px; height: 32px;
+      border: 3px solid rgba(255,255,255,0.2);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 0.8s linear infinite;
       display: none;
     }
     #lb-caption {
-      margin-top: 12px;
-      font-size: 0.8rem;
-      color: var(--muted);
-      text-align: center;
-      padding: 0 60px;
+      margin-top: 12px; font-size: 0.8rem;
+      color: var(--muted); text-align: center; padding: 0 60px;
     }
     #lb-close {
-      position: absolute;
-      top: 14px; right: 14px;
-      background: rgba(255,255,255,0.1);
-      border: none;
-      color: #fff;
-      font-size: 1.3rem;
-      width: 42px; height: 42px;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: background 0.2s;
+      position: absolute; top: 14px; right: 14px;
+      background: rgba(255,255,255,0.1); border: none;
+      color: #fff; font-size: 1.3rem;
+      width: 42px; height: 42px; border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s; z-index: 10;
     }
     #lb-close:hover { background: rgba(255,255,255,0.22); }
-
     .lb-nav {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      background: rgba(255,255,255,0.1);
-      border: none;
-      color: #fff;
-      font-size: 1.5rem;
-      width: 44px; height: 44px;
-      border-radius: 50%;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: background 0.2s;
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(255,255,255,0.1); border: none; color: #fff;
+      font-size: 1.5rem; width: 44px; height: 44px; border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s; z-index: 10;
     }
     .lb-nav:hover { background: rgba(255,255,255,0.22); }
     #lb-prev { left: 10px; }
     #lb-next { right: 10px; }
 
     #watermark {
-      position: fixed;
-      bottom: 16px; right: 16px;
-      font-size: 0.68rem;
-      color: rgba(255,255,255,0.15);
-      pointer-events: none;
-      z-index: 1001;
+      position: fixed; bottom: 16px; right: 16px;
+      font-size: 0.68rem; color: rgba(255,255,255,0.15);
+      pointer-events: none; z-index: 1001;
     }
   </style>
 </head>
@@ -269,15 +218,12 @@
     <h1>📸 갤러리</h1>
     <span class="badge" id="countBadge">불러오는 중…</span>
   </div>
-
   <div class="folder-bar">
-    <!-- 드롭다운 -->
     <div class="folder-select-wrap">
       <select id="folderSelect">
         <option value="root">📁 전체 (루트)</option>
       </select>
     </div>
-    <!-- 칩 (로드 후 채워짐) -->
     <div class="folder-chips" id="folderChips"></div>
   </div>
 </header>
@@ -289,7 +235,11 @@
 <div id="lightbox">
   <button id="lb-close">✕</button>
   <button class="lb-nav" id="lb-prev">‹</button>
-  <img id="lb-media" src="" alt="">
+  <div class="lb-img-wrap" id="lbImgWrap">
+    <img id="lb-thumb" src="" alt="">
+    <img id="lb-hires" src="" alt="">
+    <div id="lb-spinner"></div>
+  </div>
   <video id="lb-video" controls controlsList="nodownload" disablePictureInPicture></video>
   <button class="lb-nav" id="lb-next">›</button>
   <div id="lb-caption"></div>
@@ -299,7 +249,6 @@
 
 <script>
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0cBl-OPXkeoxSs80Bv2_zqAf-B98yrzZ6AuD966FNVjDx0WOy-DgzMip9pFBe84c/exec';
-  const ROOT_ID    = 'root'; // 루트 폴더를 나타내는 내부 키
 
   // ── 복사 방지 ──
   document.addEventListener('contextmenu', e => e.preventDefault());
@@ -311,11 +260,14 @@
     if (e.key === 'PrintScreen') e.preventDefault();
   });
 
+  // ── URL 생성 ──
+  // Google CDN 직접 접근 — drive.google.com/thumbnail보다 훨씬 빠름
+  const cdn = id => `https://lh3.googleusercontent.com/d/${id}`;
+  const thumbUrl = (id, w = 400) => `${cdn(id)}=w${w}`;
+  const hiresUrl = (id)           => `${cdn(id)}=w1920`;
+
   // ── 상태 ──
-  let files       = [];
-  let folders     = [];
-  let currentIdx  = 0;
-  let currentFolder = ROOT_ID; // 현재 선택된 폴더
+  let files = [], folders = [], currentIdx = 0;
 
   // ── DOM ──
   const gallery      = document.getElementById('gallery');
@@ -324,77 +276,87 @@
   const folderSelect = document.getElementById('folderSelect');
   const folderChips  = document.getElementById('folderChips');
   const lightbox     = document.getElementById('lightbox');
-  const lbMedia      = document.getElementById('lb-media');
+  const lbImgWrap    = document.getElementById('lbImgWrap');
+  const lbThumb      = document.getElementById('lb-thumb');
+  const lbHires      = document.getElementById('lb-hires');
+  const lbSpinner    = document.getElementById('lb-spinner');
   const lbVideo      = document.getElementById('lb-video');
   const lbCaption    = document.getElementById('lb-caption');
+
+  // ── Intersection Observer (lazy load) ──
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const img = entry.target.querySelector('img');
+      if (img && img.dataset.src) {
+        img.src = img.dataset.src;
+        delete img.dataset.src;
+      }
+      observer.unobserve(entry.target);
+    });
+  }, { rootMargin: '200px' }); // 200px 미리 로드
 
   // ── 초기화 ──
   async function init() {
     await loadFolders();
-    await loadFiles(ROOT_ID);
+    await loadFiles('root');
   }
 
-  // ── 폴더 목록 불러오기 ──
+  // ── 폴더 목록 ──
   async function loadFolders() {
     try {
       const res  = await fetch(SCRIPT_URL + '?action=folders');
       const data = await res.json();
       if (data.status !== 'success' || !data.folders.length) return;
-
       folders = data.folders;
-
-      // 드롭다운 옵션 추가
       folders.forEach(f => {
         const opt = document.createElement('option');
         opt.value = f.id;
         opt.textContent = '📂 ' + f.name;
         folderSelect.appendChild(opt);
       });
-
-      // 칩 추가 (전체 + 각 폴더)
-      renderChips(ROOT_ID);
+      renderChips('root');
     } catch (_) {}
   }
 
-  function renderChips(activeFolderId) {
+  function renderChips(activeId) {
     folderChips.innerHTML = '';
-
-    const allChip = makeChip('📁 전체', ROOT_ID, activeFolderId);
-    folderChips.appendChild(allChip);
-
-    folders.forEach(f => {
-      folderChips.appendChild(makeChip('📂 ' + f.name, f.id, activeFolderId));
-    });
+    [{ id: 'root', name: '📁 전체' }, ...folders.map(f => ({ id: f.id, name: '📂 ' + f.name }))]
+      .forEach(({ id, name }) => {
+        const btn = document.createElement('button');
+        btn.className = 'chip' + (id === activeId ? ' active' : '');
+        btn.textContent = name;
+        btn.addEventListener('click', () => switchFolder(id));
+        folderChips.appendChild(btn);
+      });
   }
 
-  function makeChip(label, folderId, activeFolderId) {
-    const chip = document.createElement('button');
-    chip.className = 'chip' + (folderId === activeFolderId ? ' active' : '');
-    chip.textContent = label;
-    chip.addEventListener('click', () => switchFolder(folderId));
-    return chip;
-  }
-
-  // ── 파일 목록 불러오기 ──
+  // ── 파일 목록 ──
   async function loadFiles(folderId) {
-    currentFolder = folderId;
     gallery.innerHTML = '';
-    stateBox.innerHTML = '<div class="state-center"><div class="spinner"></div><span>사진 불러오는 중…</span></div>';
-    countBadge.textContent = '불러오는 중…';
+    stateBox.innerHTML = '<div class="state-center"><div class="spinner"></div><span>불러오는 중…</span></div>';
+    countBadge.textContent = '…';
+
+    // 스켈레톤 먼저 렌더 (즉각적인 피드백)
+    for (let i = 0; i < 6; i++) {
+      const sk = document.createElement('div');
+      sk.className = 'gallery-item skeleton';
+      gallery.appendChild(sk);
+    }
+    stateBox.innerHTML = '';
 
     try {
-      const url = folderId === ROOT_ID
+      const url = folderId === 'root'
         ? SCRIPT_URL + '?action=list'
         : SCRIPT_URL + '?action=list&folderId=' + folderId;
-
       const res  = await fetch(url);
       const data = await res.json();
       if (data.status !== 'success') throw new Error(data.message);
 
       files = data.files;
-      stateBox.innerHTML = '';
+      gallery.innerHTML = '';
 
-      if (files.length === 0) {
+      if (!files.length) {
         stateBox.innerHTML = '<div class="state-center"><span style="font-size:2rem">📭</span><span>이 폴더에 사진이 없습니다.</span></div>';
         countBadge.textContent = '0장';
         return;
@@ -404,24 +366,18 @@
       files.forEach((f, i) => renderItem(f, i));
 
     } catch (err) {
+      gallery.innerHTML = '';
       stateBox.innerHTML = `<div class="state-center"><span style="font-size:2rem">⚠️</span><span>불러오기 실패: ${err.message}</span></div>`;
       countBadge.textContent = '오류';
     }
   }
 
   function switchFolder(folderId) {
-    // 드롭다운 동기화
     folderSelect.value = folderId;
-    // 칩 동기화
     renderChips(folderId);
     loadFiles(folderId);
   }
-
-  // 드롭다운 변경 → 폴더 전환
-  folderSelect.addEventListener('change', () => {
-    renderChips(folderSelect.value);
-    loadFiles(folderSelect.value);
-  });
+  folderSelect.addEventListener('change', () => switchFolder(folderSelect.value));
 
   // ── 아이템 렌더 ──
   function renderItem(f, i) {
@@ -429,17 +385,33 @@
     const div = document.createElement('div');
     div.className = 'gallery-item';
 
-    div.innerHTML = `
-      <img src="https://drive.google.com/thumbnail?id=${f.id}&sz=w600"
-           alt="${esc(f.name)}" loading="lazy"
-           onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22><rect fill=%22%231e293b%22 width=%221%22 height=%221%22/></svg>'">
-      ${isVideo ? '<span class="video-badge">🎥 동영상</span>' : ''}
-    `;
+    const img = document.createElement('img');
+    img.alt = f.name;
+    // 처음 6개는 즉시 로드, 나머지는 Intersection Observer
+    if (i < 6) {
+      img.src = thumbUrl(f.id, 400);
+    } else {
+      img.dataset.src = thumbUrl(f.id, 400);
+    }
+    img.onload  = () => { img.classList.add('loaded'); div.classList.remove('skeleton'); };
+    img.onerror = () => div.classList.remove('skeleton');
+
+    if (isVideo) {
+      const badge = document.createElement('span');
+      badge.className = 'video-badge';
+      badge.textContent = '🎥 동영상';
+      div.appendChild(badge);
+    }
+    div.appendChild(img);
     div.addEventListener('click', () => openLightbox(i));
     gallery.appendChild(div);
+
+    if (i >= 6) observer.observe(div);
   }
 
   // ── 라이트박스 ──
+  let hiresReq = null; // 진행 중인 hires 로드 추적
+
   function openLightbox(idx) {
     currentIdx = idx;
     showSlide();
@@ -449,56 +421,83 @@
 
   function closeLightbox() {
     lightbox.classList.remove('open');
-    lbVideo.pause();
-    lbVideo.src = '';
-    lbMedia.src = '';
+    lbVideo.pause(); lbVideo.src = '';
+    lbThumb.src = ''; lbHires.src = '';
+    lbHires.classList.remove('ready');
     document.body.style.overflow = '';
+    if (hiresReq) { hiresReq.src = ''; hiresReq = null; }
   }
 
   function showSlide() {
     const f = files[currentIdx];
-    const isVideo = f.mimeType.startsWith('video/');
     lbCaption.textContent = f.name;
+    const isVideo = f.mimeType.startsWith('video/');
+
+    // hires 로드 취소
+    if (hiresReq) { hiresReq.src = ''; hiresReq = null; }
+    lbHires.classList.remove('ready');
+
     if (isVideo) {
-      lbMedia.style.display = 'none';
-      lbVideo.style.display = 'block';
+      lbImgWrap.style.display = 'none';
+      lbVideo.style.display   = 'block';
       lbVideo.src = `https://drive.google.com/file/d/${f.id}/preview`;
     } else {
-      lbVideo.style.display = 'none';
-      lbVideo.pause();
-      lbMedia.style.display = 'block';
-      lbMedia.src = `https://drive.google.com/uc?export=view&id=${f.id}`;
+      lbVideo.style.display   = 'none';
+      lbImgWrap.style.display = 'flex';
+
+      // ① 즉시: 썸네일(w600) 표시 — 대부분 캐시 or 빠른 로드
+      lbThumb.src = thumbUrl(f.id, 600);
+      lbSpinner.style.display = 'block';
+
+      // ② 배경: 고해상도 로드 후 교체
+      const req = new Image();
+      hiresReq = req;
+      req.onload = () => {
+        if (hiresReq !== req) return; // 슬라이드가 바뀐 경우 무시
+        lbHires.src = req.src;
+        lbHires.classList.add('ready');
+        lbSpinner.style.display = 'none';
+        hiresReq = null;
+      };
+      req.src = hiresUrl(f.id);
+    }
+
+    // ③ 다음/이전 이미지 미리 preload
+    preload(currentIdx + 1);
+    preload(currentIdx - 1);
+  }
+
+  function preload(idx) {
+    if (idx < 0 || idx >= files.length) return;
+    const f = files[idx];
+    if (!f.mimeType.startsWith('video/')) {
+      const img = new Image();
+      img.src = thumbUrl(f.id, 600);
     }
   }
 
+  // 네비게이션
+  function goPrev() { currentIdx = (currentIdx - 1 + files.length) % files.length; showSlide(); }
+  function goNext() { currentIdx = (currentIdx + 1) % files.length; showSlide(); }
+
   document.getElementById('lb-close').addEventListener('click', closeLightbox);
-  document.getElementById('lb-prev').addEventListener('click', () => {
-    currentIdx = (currentIdx - 1 + files.length) % files.length;
-    showSlide();
-  });
-  document.getElementById('lb-next').addEventListener('click', () => {
-    currentIdx = (currentIdx + 1) % files.length;
-    showSlide();
-  });
+  document.getElementById('lb-prev').addEventListener('click', goPrev);
+  document.getElementById('lb-next').addEventListener('click', goNext);
   lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
 
   document.addEventListener('keydown', e => {
     if (!lightbox.classList.contains('open')) return;
-    if (e.key === 'ArrowLeft')  { currentIdx = (currentIdx - 1 + files.length) % files.length; showSlide(); }
-    if (e.key === 'ArrowRight') { currentIdx = (currentIdx + 1) % files.length; showSlide(); }
+    if (e.key === 'ArrowLeft')  goPrev();
+    if (e.key === 'ArrowRight') goNext();
     if (e.key === 'Escape')     closeLightbox();
   });
 
+  // 스와이프
   let touchX = 0;
   lightbox.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
   lightbox.addEventListener('touchend', e => {
     const diff = touchX - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) {
-      currentIdx = diff > 0
-        ? (currentIdx + 1) % files.length
-        : (currentIdx - 1 + files.length) % files.length;
-      showSlide();
-    }
+    if (Math.abs(diff) > 50) diff > 0 ? goNext() : goPrev();
   });
 
   function esc(s) {
