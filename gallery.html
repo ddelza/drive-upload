@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#1e293b">
+  <title>갤러리</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box; margin: 0; padding: 0;
+      /* 텍스트/이미지 선택 차단 */
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+      /* iOS 길게 누르기 차단 */
+      -webkit-touch-callout: none;
+    }
+
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --blue: #4f8ef7;
+      --muted: #94a3b8;
+      --border: #334155;
+    }
+
+    body {
+      background: var(--bg);
+      color: #f1f5f9;
+      font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', 'Segoe UI', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── 헤더 ── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15,23,42,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    header h1 { font-size: 1.1rem; font-weight: 700; }
+    .badge {
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: var(--card);
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+    }
+
+    /* ── 그리드 ── */
+    .gallery {
+      padding: 16px;
+      columns: 2;
+      column-gap: 10px;
+    }
+    @media (min-width: 600px)  { .gallery { columns: 3; } }
+    @media (min-width: 900px)  { .gallery { columns: 4; } }
+    @media (min-width: 1200px) { .gallery { columns: 5; } }
+
+    .gallery-item {
+      break-inside: avoid;
+      margin-bottom: 10px;
+      border-radius: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      background: var(--card);
+      border: 1px solid var(--border);
+    }
+    .gallery-item img {
+      display: block;
+      width: 100%;
+      height: auto;
+      transition: transform 0.3s ease;
+      /* 이미지 드래그 차단 */
+      -webkit-user-drag: none;
+      pointer-events: none;
+    }
+    .gallery-item:hover img { transform: scale(1.03); }
+
+    /* 투명 오버레이 — 우클릭/드래그 방어 */
+    .gallery-item::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+    }
+
+    .video-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0,0,0,0.6);
+      color: #fff;
+      font-size: 0.7rem;
+      padding: 3px 7px;
+      border-radius: 6px;
+      pointer-events: none;
+    }
+
+    /* ── 로딩 / 빈 상태 ── */
+    .state-center {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      gap: 12px;
+      color: var(--muted);
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── 라이트박스 ── */
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgba(0,0,0,0.93);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    #lightbox.open { display: flex; }
+
+    #lb-media {
+      max-width: 92vw;
+      max-height: 82vh;
+      object-fit: contain;
+      border-radius: 8px;
+      pointer-events: none;
+      -webkit-user-drag: none;
+    }
+    #lb-video {
+      max-width: 92vw;
+      max-height: 82vh;
+      border-radius: 8px;
+      outline: none;
+      /* 동영상은 controls 허용하되 다운로드 버튼만 숨김 */
+      pointer-events: auto;
+    }
+    #lb-video::-webkit-media-controls-enclosure { overflow: hidden; }
+    #lb-video::-webkit-media-controls-panel { width: calc(100% + 30px); }
+
+    #lb-caption {
+      margin-top: 12px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    #lb-close {
+      position: absolute;
+      top: 16px; right: 16px;
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #fff;
+      font-size: 1.4rem;
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    #lb-close:hover { background: rgba(255,255,255,0.2); }
+
+    .lb-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #fff;
+      font-size: 1.5rem;
+      width: 46px; height: 46px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .lb-nav:hover { background: rgba(255,255,255,0.2); }
+    #lb-prev { left: 12px; }
+    #lb-next { right: 12px; }
+
+    /* ── 워터마크 ── */
+    #watermark {
+      position: fixed;
+      bottom: 18px; right: 18px;
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.18);
+      pointer-events: none;
+      z-index: 1001;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>📸 갤러리</h1>
+  <span class="badge" id="countBadge">불러오는 중…</span>
+</header>
+
+<div id="gallery" class="gallery"></div>
+<div id="stateBox"></div>
+
+<!-- 라이트박스 -->
+<div id="lightbox">
+  <button id="lb-close" title="닫기">✕</button>
+  <button class="lb-nav" id="lb-prev">‹</button>
+  <img id="lb-media" src="" alt="">
+  <video id="lb-video" controls controlsList="nodownload" disablePictureInPicture style="display:none"></video>
+  <button class="lb-nav" id="lb-next">›</button>
+  <div id="lb-caption"></div>
+</div>
+
+<div id="watermark">무단 복제 금지</div>
+
+<script>
+  // ──────────────────────────────────────────────
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0cBl-OPXkeoxSs80Bv2_zqAf-B98yrzZ6AuD966FNVjDx0WOy-DgzMip9pFBe84c/exec';
+  // ──────────────────────────────────────────────
+
+  // ── 복사 방지 ──
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  document.addEventListener('dragstart',   e => e.preventDefault());
+  document.addEventListener('selectstart', e => e.preventDefault());
+  document.addEventListener('keydown', e => {
+    const ctrl = e.ctrlKey || e.metaKey;
+    if (ctrl && ['s','u','a','c','p'].includes(e.key.toLowerCase())) e.preventDefault();
+    if (e.key === 'PrintScreen') e.preventDefault();
+  });
+
+  // ── 상태 ──
+  let files = [];
+  let currentIdx = 0;
+
+  // ── DOM ──
+  const gallery    = document.getElementById('gallery');
+  const stateBox   = document.getElementById('stateBox');
+  const countBadge = document.getElementById('countBadge');
+  const lightbox   = document.getElementById('lightbox');
+  const lbMedia    = document.getElementById('lb-media');
+  const lbVideo    = document.getElementById('lb-video');
+  const lbCaption  = document.getElementById('lb-caption');
+  const lbClose    = document.getElementById('lb-close');
+  const lbPrev     = document.getElementById('lb-prev');
+  const lbNext     = document.getElementById('lb-next');
+
+  // ── 로드 ──
+  async function loadGallery() {
+    stateBox.innerHTML = '<div class="state-center"><div class="spinner"></div><span>사진 불러오는 중…</span></div>';
+    try {
+      const res  = await fetch(SCRIPT_URL + '?action=list');
+      const data = await res.json();
+      if (data.status !== 'success') throw new Error(data.message);
+
+      files = data.files;
+      stateBox.innerHTML = '';
+
+      if (files.length === 0) {
+        stateBox.innerHTML = '<div class="state-center"><span style="font-size:2rem">📭</span><span>아직 업로드된 사진이 없습니다.</span></div>';
+        countBadge.textContent = '0장';
+        return;
+      }
+
+      countBadge.textContent = files.length + '장';
+      files.forEach((f, i) => renderItem(f, i));
+
+    } catch (err) {
+      stateBox.innerHTML = `<div class="state-center"><span style="font-size:2rem">⚠️</span><span>불러오기 실패: ${err.message}</span></div>`;
+      countBadge.textContent = '오류';
+    }
+  }
+
+  function thumbUrl(id) {
+    return `https://drive.google.com/thumbnail?id=${id}&sz=w600`;
+  }
+
+  function renderItem(f, i) {
+    const isVideo = f.mimeType.startsWith('video/');
+    const div = document.createElement('div');
+    div.className = 'gallery-item';
+    div.dataset.idx = i;
+
+    if (isVideo) {
+      div.innerHTML = `
+        <img src="${thumbUrl(f.id)}" alt="${esc(f.name)}" loading="lazy"
+             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22/>'">
+        <span class="video-badge">🎥 동영상</span>
+      `;
+    } else {
+      div.innerHTML = `
+        <img src="${thumbUrl(f.id)}" alt="${esc(f.name)}" loading="lazy"
+             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 1 1%22/>'">
+      `;
+    }
+
+    div.addEventListener('click', () => openLightbox(i));
+    gallery.appendChild(div);
+  }
+
+  // ── 라이트박스 ──
+  function openLightbox(idx) {
+    currentIdx = idx;
+    showSlide();
+    lightbox.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove('open');
+    lbVideo.pause();
+    lbVideo.src = '';
+    document.body.style.overflow = '';
+  }
+
+  function showSlide() {
+    const f = files[currentIdx];
+    const isVideo = f.mimeType.startsWith('video/');
+
+    lbCaption.textContent = f.name;
+
+    if (isVideo) {
+      lbMedia.style.display = 'none';
+      lbVideo.style.display = 'block';
+      lbVideo.src = `https://drive.google.com/file/d/${f.id}/preview`;
+    } else {
+      lbVideo.style.display = 'none';
+      lbVideo.pause();
+      lbMedia.style.display = 'block';
+      lbMedia.src = `https://drive.google.com/uc?export=view&id=${f.id}`;
+    }
+  }
+
+  function prevSlide() {
+    currentIdx = (currentIdx - 1 + files.length) % files.length;
+    showSlide();
+  }
+  function nextSlide() {
+    currentIdx = (currentIdx + 1) % files.length;
+    showSlide();
+  }
+
+  lbClose.addEventListener('click', closeLightbox);
+  lbPrev.addEventListener('click', prevSlide);
+  lbNext.addEventListener('click', nextSlide);
+  lightbox.addEventListener('click', e => { if (e.target === lightbox) closeLightbox(); });
+
+  document.addEventListener('keydown', e => {
+    if (!lightbox.classList.contains('open')) return;
+    if (e.key === 'ArrowLeft')  prevSlide();
+    if (e.key === 'ArrowRight') nextSlide();
+    if (e.key === 'Escape')     closeLightbox();
+  });
+
+  // 스와이프 (모바일)
+  let touchX = 0;
+  lightbox.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
+  lightbox.addEventListener('touchend', e => {
+    const diff = touchX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) diff > 0 ? nextSlide() : prevSlide();
+  });
+
+  function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  loadGallery();
+</script>
+</body>
+</html>
