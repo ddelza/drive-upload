@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="theme-color" content="#1e293b">
   <title>갤러리</title>
+  <!-- CDN 도메인 미리 연결 -->
+  <link rel="preconnect" href="https://lh3.googleusercontent.com">
+  <link rel="preconnect" href="https://drive.google.com">
+  <link rel="dns-prefetch" href="https://lh3.googleusercontent.com">
   <style>
     *, *::before, *::after {
       box-sizing: border-box; margin: 0; padding: 0;
@@ -20,6 +24,28 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans KR', 'Segoe UI', sans-serif;
       min-height: 100vh;
     }
+
+    /* ── 상단 진행 바 ── */
+    #topbar {
+      position: fixed; top: 0; left: 0; z-index: 9999;
+      height: 3px; width: 0%;
+      background: linear-gradient(90deg, #4f8ef7, #818cf8);
+      transition: width 0.3s ease, opacity 0.4s ease;
+      opacity: 1;
+      box-shadow: 0 0 8px #4f8ef7aa;
+    }
+    #topbar.done { opacity: 0; }
+
+    /* ── 퍼센트 뱃지 ── */
+    #pctBadge {
+      position: fixed; top: 8px; right: 14px; z-index: 9998;
+      font-size: 0.72rem; font-weight: 700;
+      color: #fff; background: rgba(79,142,247,0.85);
+      padding: 2px 8px; border-radius: 999px;
+      opacity: 0; transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    #pctBadge.show { opacity: 1; }
 
     /* ── 헤더 ── */
     header {
@@ -71,7 +97,7 @@
     }
     .chip.active { background: var(--blue); border-color: var(--blue); color: #fff; }
 
-    /* ── 그리드 (고정 비율 셀) ── */
+    /* ── 그리드 ── */
     .gallery {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -81,17 +107,11 @@
     @media (min-width: 800px)  { .gallery { grid-template-columns: repeat(4, 1fr); } }
     @media (min-width: 1100px) { .gallery { grid-template-columns: repeat(5, 1fr); } }
 
-    /* 스켈레톤 + 이미지 셀 */
     .gallery-item {
-      aspect-ratio: 1;
-      border-radius: 12px;
-      overflow: hidden;
-      cursor: pointer;
-      position: relative;
-      background: var(--card);
-      border: 1px solid var(--border);
+      aspect-ratio: 1; border-radius: 12px; overflow: hidden;
+      cursor: pointer; position: relative;
+      background: var(--card); border: 1px solid var(--border);
     }
-    /* 로딩 전 스켈레톤 shimmer */
     .gallery-item.skeleton {
       background: linear-gradient(90deg, #1e293b 25%, #263548 50%, #1e293b 75%);
       background-size: 200% 100%;
@@ -100,17 +120,12 @@
     @keyframes shimmer { to { background-position: -200% 0; } }
 
     .gallery-item img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      display: block;
-      transition: transform 0.3s ease, opacity 0.3s ease;
-      -webkit-user-drag: none;
-      pointer-events: none;
-      opacity: 0;
+      width: 100%; height: 100%; object-fit: cover; display: block;
+      transition: transform 0.3s ease, opacity 0.35s ease;
+      -webkit-user-drag: none; pointer-events: none; opacity: 0;
     }
     .gallery-item img.loaded { opacity: 1; }
     .gallery-item:hover img { transform: scale(1.06); }
-    /* 복사 방지 투명 오버레이 */
     .gallery-item::after { content: ''; position: absolute; inset: 0; }
     .video-badge {
       position: absolute; top: 7px; right: 7px;
@@ -127,58 +142,41 @@
     }
     .spinner {
       width: 36px; height: 36px;
-      border: 3px solid var(--border);
-      border-top-color: var(--blue);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      border: 3px solid var(--border); border-top-color: var(--blue);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── 라이트박스 ── */
     #lightbox {
-      display: none; position: fixed; inset: 0;
-      z-index: 1000; background: rgba(0,0,0,0.94);
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,0.94);
       align-items: center; justify-content: center; flex-direction: column;
     }
     #lightbox.open { display: flex; }
-
     .lb-img-wrap {
-      position: relative;
-      max-width: 92vw; max-height: 82vh;
+      position: relative; max-width: 92vw; max-height: 82vh;
       display: flex; align-items: center; justify-content: center;
     }
-    /* 저해상도 (즉시 표시) */
     #lb-thumb {
-      max-width: 92vw; max-height: 82vh;
-      object-fit: contain; border-radius: 8px;
-      pointer-events: none; -webkit-user-drag: none;
-      position: absolute; top: 0; left: 0;
-      width: 100%; height: 100%;
-      filter: blur(0px);
-      transition: opacity 0.25s;
+      max-width: 92vw; max-height: 82vh; object-fit: contain;
+      border-radius: 8px; pointer-events: none; -webkit-user-drag: none;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     }
-    /* 고해상도 (로드 완료 후 fade-in) */
     #lb-hires {
-      max-width: 92vw; max-height: 82vh;
-      object-fit: contain; border-radius: 8px;
-      pointer-events: none; -webkit-user-drag: none;
-      opacity: 0; transition: opacity 0.3s ease;
-      position: relative; z-index: 1;
+      max-width: 92vw; max-height: 82vh; object-fit: contain;
+      border-radius: 8px; pointer-events: none; -webkit-user-drag: none;
+      opacity: 0; transition: opacity 0.3s ease; position: relative; z-index: 1;
     }
     #lb-hires.ready { opacity: 1; }
-
     #lb-video {
-      max-width: 92vw; max-height: 82vh;
-      border-radius: 8px; outline: none;
-      pointer-events: auto; display: none;
+      max-width: 92vw; max-height: 82vh; border-radius: 8px;
+      outline: none; pointer-events: auto; display: none;
     }
     #lb-spinner {
-      position: absolute; z-index: 2;
-      width: 32px; height: 32px;
-      border: 3px solid rgba(255,255,255,0.2);
-      border-top-color: #fff; border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      display: none;
+      position: absolute; z-index: 2; width: 30px; height: 30px;
+      border: 3px solid rgba(255,255,255,0.2); border-top-color: #fff;
+      border-radius: 50%; animation: spin 0.8s linear infinite; display: none;
     }
     #lb-caption {
       margin-top: 12px; font-size: 0.8rem;
@@ -186,9 +184,8 @@
     }
     #lb-close {
       position: absolute; top: 14px; right: 14px;
-      background: rgba(255,255,255,0.1); border: none;
-      color: #fff; font-size: 1.3rem;
-      width: 42px; height: 42px; border-radius: 50%;
+      background: rgba(255,255,255,0.1); border: none; color: #fff;
+      font-size: 1.3rem; width: 42px; height: 42px; border-radius: 50%;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
       transition: background 0.2s; z-index: 10;
     }
@@ -205,13 +202,16 @@
     #lb-next { right: 10px; }
 
     #watermark {
-      position: fixed; bottom: 16px; right: 16px;
-      font-size: 0.68rem; color: rgba(255,255,255,0.15);
-      pointer-events: none; z-index: 1001;
+      position: fixed; bottom: 16px; right: 16px; font-size: 0.68rem;
+      color: rgba(255,255,255,0.15); pointer-events: none; z-index: 1001;
     }
   </style>
 </head>
 <body>
+
+<!-- 상단 진행 바 -->
+<div id="topbar"></div>
+<div id="pctBadge">0%</div>
 
 <header>
   <div class="header-top">
@@ -231,7 +231,6 @@
 <div id="gallery" class="gallery"></div>
 <div id="stateBox"></div>
 
-<!-- 라이트박스 -->
 <div id="lightbox">
   <button id="lb-close">✕</button>
   <button class="lb-nav" id="lb-prev">‹</button>
@@ -249,6 +248,7 @@
 
 <script>
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz0cBl-OPXkeoxSs80Bv2_zqAf-B98yrzZ6AuD966FNVjDx0WOy-DgzMip9pFBe84c/exec';
+  const CACHE_TTL  = 5 * 60 * 1000; // 5분
 
   // ── 복사 방지 ──
   document.addEventListener('contextmenu', e => e.preventDefault());
@@ -260,14 +260,53 @@
     if (e.key === 'PrintScreen') e.preventDefault();
   });
 
+  // ── 진행 바 ──
+  const topbar   = document.getElementById('topbar');
+  const pctBadge = document.getElementById('pctBadge');
+  let _pct = 0;
+
+  function setProgress(pct) {
+    _pct = Math.min(pct, 99);
+    topbar.style.width  = _pct + '%';
+    pctBadge.textContent = Math.round(_pct) + '%';
+    pctBadge.classList.add('show');
+  }
+  function doneProgress() {
+    topbar.style.width = '100%';
+    pctBadge.textContent = '100%';
+    setTimeout(() => {
+      topbar.classList.add('done');
+      pctBadge.classList.remove('show');
+      setTimeout(() => { topbar.style.width = '0%'; topbar.classList.remove('done'); }, 400);
+    }, 300);
+  }
+
   // ── URL 생성 ──
-  // Google CDN 직접 접근 — drive.google.com/thumbnail보다 훨씬 빠름
-  const cdn = id => `https://lh3.googleusercontent.com/d/${id}`;
-  const thumbUrl = (id, w = 400) => `${cdn(id)}=w${w}`;
-  const hiresUrl = (id)           => `${cdn(id)}=w1920`;
+  // 이미지: Google CDN (빠름)
+  const imgThumb = (id, w = 400) => `https://lh3.googleusercontent.com/d/${id}=w${w}`;
+  const imgHires = (id)           => `https://lh3.googleusercontent.com/d/${id}=w1920`;
+  // 동영상: Drive thumbnail (비디오 프레임 추출)
+  const vidThumb = (id, w = 400) => `https://drive.google.com/thumbnail?id=${id}&sz=w${w}`;
+
+  const thumbUrl = (f, w) => f.mimeType.startsWith('video/') ? vidThumb(f.id, w) : imgThumb(f.id, w);
+
+  // ── localStorage 캐시 ──
+  function getCached(key) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      const { data, ts } = JSON.parse(raw);
+      if (Date.now() - ts > CACHE_TTL) { localStorage.removeItem(key); return null; }
+      return data;
+    } catch { return null; }
+  }
+  function setCached(key, data) {
+    try { localStorage.setItem(key, JSON.stringify({ data, ts: Date.now() })); } catch {}
+  }
 
   // ── 상태 ──
   let files = [], folders = [], currentIdx = 0;
+  let hiresReq = null;
 
   // ── DOM ──
   const gallery      = document.getElementById('gallery');
@@ -283,40 +322,45 @@
   const lbVideo      = document.getElementById('lb-video');
   const lbCaption    = document.getElementById('lb-caption');
 
-  // ── Intersection Observer (lazy load) ──
-  const observer = new IntersectionObserver((entries) => {
+  // ── Intersection Observer ──
+  const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (!entry.isIntersecting) return;
       const img = entry.target.querySelector('img');
-      if (img && img.dataset.src) {
-        img.src = img.dataset.src;
-        delete img.dataset.src;
-      }
+      if (img && img.dataset.src) { img.src = img.dataset.src; delete img.dataset.src; }
       observer.unobserve(entry.target);
     });
-  }, { rootMargin: '200px' }); // 200px 미리 로드
+  }, { rootMargin: '300px' });
 
   // ── 초기화 ──
   async function init() {
+    setProgress(5);
     await loadFolders();
+    setProgress(15);
     await loadFiles('root');
   }
 
   // ── 폴더 목록 ──
   async function loadFolders() {
+    const cached = getCached('gallery_folders');
+    if (cached) { applyFolders(cached); return; }
     try {
       const res  = await fetch(SCRIPT_URL + '?action=folders');
       const data = await res.json();
       if (data.status !== 'success' || !data.folders.length) return;
-      folders = data.folders;
-      folders.forEach(f => {
-        const opt = document.createElement('option');
-        opt.value = f.id;
-        opt.textContent = '📂 ' + f.name;
-        folderSelect.appendChild(opt);
-      });
-      renderChips('root');
-    } catch (_) {}
+      setCached('gallery_folders', data.folders);
+      applyFolders(data.folders);
+    } catch {}
+  }
+
+  function applyFolders(list) {
+    folders = list;
+    folders.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f.id; opt.textContent = '📂 ' + f.name;
+      folderSelect.appendChild(opt);
+    });
+    renderChips('root');
   }
 
   function renderChips(activeId) {
@@ -334,17 +378,26 @@
   // ── 파일 목록 ──
   async function loadFiles(folderId) {
     gallery.innerHTML = '';
-    stateBox.innerHTML = '<div class="state-center"><div class="spinner"></div><span>불러오는 중…</span></div>';
+    stateBox.innerHTML = '';
     countBadge.textContent = '…';
 
-    // 스켈레톤 먼저 렌더 (즉각적인 피드백)
-    for (let i = 0; i < 6; i++) {
+    // 스켈레톤 표시
+    for (let i = 0; i < 8; i++) {
       const sk = document.createElement('div');
       sk.className = 'gallery-item skeleton';
       gallery.appendChild(sk);
     }
-    stateBox.innerHTML = '';
 
+    // 캐시 확인
+    const cacheKey = 'gallery_files_' + folderId;
+    const cached   = getCached(cacheKey);
+    if (cached) {
+      setProgress(80);
+      renderFiles(cached, folderId);
+      return;
+    }
+
+    setProgress(30);
     try {
       const url = folderId === 'root'
         ? SCRIPT_URL + '?action=list'
@@ -352,49 +405,79 @@
       const res  = await fetch(url);
       const data = await res.json();
       if (data.status !== 'success') throw new Error(data.message);
-
-      files = data.files;
-      gallery.innerHTML = '';
-
-      if (!files.length) {
-        stateBox.innerHTML = '<div class="state-center"><span style="font-size:2rem">📭</span><span>이 폴더에 사진이 없습니다.</span></div>';
-        countBadge.textContent = '0장';
-        return;
-      }
-
-      countBadge.textContent = files.length + '장';
-      files.forEach((f, i) => renderItem(f, i));
-
+      setCached(cacheKey, data.files);
+      setProgress(60);
+      renderFiles(data.files, folderId);
     } catch (err) {
       gallery.innerHTML = '';
       stateBox.innerHTML = `<div class="state-center"><span style="font-size:2rem">⚠️</span><span>불러오기 실패: ${err.message}</span></div>`;
       countBadge.textContent = '오류';
+      doneProgress();
     }
+  }
+
+  function renderFiles(list, folderId) {
+    files = list;
+    gallery.innerHTML = '';
+
+    if (!files.length) {
+      stateBox.innerHTML = '<div class="state-center"><span style="font-size:2rem">📭</span><span>이 폴더에 사진이 없습니다.</span></div>';
+      countBadge.textContent = '0장';
+      doneProgress();
+      return;
+    }
+
+    countBadge.textContent = files.length + '장';
+
+    let loaded = 0;
+    const onImgSettle = () => {
+      loaded++;
+      const pct = 60 + Math.round((loaded / Math.min(files.length, 12)) * 40);
+      setProgress(pct);
+      if (loaded >= Math.min(files.length, 12)) doneProgress();
+    };
+
+    files.forEach((f, i) => renderItem(f, i, onImgSettle));
   }
 
   function switchFolder(folderId) {
     folderSelect.value = folderId;
     renderChips(folderId);
+    setProgress(5);
     loadFiles(folderId);
   }
   folderSelect.addEventListener('change', () => switchFolder(folderSelect.value));
 
   // ── 아이템 렌더 ──
-  function renderItem(f, i) {
+  function renderItem(f, i, onSettle) {
     const isVideo = f.mimeType.startsWith('video/');
     const div = document.createElement('div');
     div.className = 'gallery-item';
 
     const img = document.createElement('img');
     img.alt = f.name;
-    // 처음 6개는 즉시 로드, 나머지는 Intersection Observer
-    if (i < 6) {
-      img.src = thumbUrl(f.id, 400);
+
+    const src = thumbUrl(f, 400);
+    if (i < 8) {
+      img.src = src;
     } else {
-      img.dataset.src = thumbUrl(f.id, 400);
+      img.dataset.src = src;
     }
-    img.onload  = () => { img.classList.add('loaded'); div.classList.remove('skeleton'); };
-    img.onerror = () => div.classList.remove('skeleton');
+
+    img.onload = () => {
+      img.classList.add('loaded');
+      div.classList.remove('skeleton');
+      if (i < 12) onSettle();
+    };
+    img.onerror = () => {
+      // CDN 실패 시 Drive thumbnail으로 fallback
+      if (!img.dataset.fallback) {
+        img.dataset.fallback = '1';
+        img.src = `https://drive.google.com/thumbnail?id=${f.id}&sz=w400`;
+      }
+      div.classList.remove('skeleton');
+      if (i < 12) onSettle();
+    };
 
     if (isVideo) {
       const badge = document.createElement('span');
@@ -405,25 +488,21 @@
     div.appendChild(img);
     div.addEventListener('click', () => openLightbox(i));
     gallery.appendChild(div);
-
-    if (i >= 6) observer.observe(div);
+    if (i >= 8) observer.observe(div);
   }
 
   // ── 라이트박스 ──
-  let hiresReq = null; // 진행 중인 hires 로드 추적
-
   function openLightbox(idx) {
-    currentIdx = idx;
-    showSlide();
+    currentIdx = idx; showSlide();
     lightbox.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
-
   function closeLightbox() {
     lightbox.classList.remove('open');
     lbVideo.pause(); lbVideo.src = '';
     lbThumb.src = ''; lbHires.src = '';
     lbHires.classList.remove('ready');
+    lbSpinner.style.display = 'none';
     document.body.style.overflow = '';
     if (hiresReq) { hiresReq.src = ''; hiresReq = null; }
   }
@@ -432,8 +511,6 @@
     const f = files[currentIdx];
     lbCaption.textContent = f.name;
     const isVideo = f.mimeType.startsWith('video/');
-
-    // hires 로드 취소
     if (hiresReq) { hiresReq.src = ''; hiresReq = null; }
     lbHires.classList.remove('ready');
 
@@ -442,41 +519,35 @@
       lbVideo.style.display   = 'block';
       lbVideo.src = `https://drive.google.com/file/d/${f.id}/preview`;
     } else {
-      lbVideo.style.display   = 'none';
+      lbVideo.style.display   = 'none'; lbVideo.pause();
       lbImgWrap.style.display = 'flex';
 
-      // ① 즉시: 썸네일(w600) 표시 — 대부분 캐시 or 빠른 로드
-      lbThumb.src = thumbUrl(f.id, 600);
+      // 즉시: w600 썸네일 (캐시 가능성 높음)
+      lbThumb.src = imgThumb(f.id, 600);
       lbSpinner.style.display = 'block';
 
-      // ② 배경: 고해상도 로드 후 교체
+      // 배경: w1920 고해상도
       const req = new Image();
-      hiresReq = req;
+      hiresReq  = req;
       req.onload = () => {
-        if (hiresReq !== req) return; // 슬라이드가 바뀐 경우 무시
+        if (hiresReq !== req) return;
         lbHires.src = req.src;
         lbHires.classList.add('ready');
         lbSpinner.style.display = 'none';
         hiresReq = null;
       };
-      req.src = hiresUrl(f.id);
+      req.src = imgHires(f.id);
     }
 
-    // ③ 다음/이전 이미지 미리 preload
-    preload(currentIdx + 1);
-    preload(currentIdx - 1);
+    // 인접 이미지 preload
+    [-1, 1].forEach(d => {
+      const idx = currentIdx + d;
+      if (idx >= 0 && idx < files.length && !files[idx].mimeType.startsWith('video/')) {
+        new Image().src = imgThumb(files[idx].id, 600);
+      }
+    });
   }
 
-  function preload(idx) {
-    if (idx < 0 || idx >= files.length) return;
-    const f = files[idx];
-    if (!f.mimeType.startsWith('video/')) {
-      const img = new Image();
-      img.src = thumbUrl(f.id, 600);
-    }
-  }
-
-  // 네비게이션
   function goPrev() { currentIdx = (currentIdx - 1 + files.length) % files.length; showSlide(); }
   function goNext() { currentIdx = (currentIdx + 1) % files.length; showSlide(); }
 
@@ -492,17 +563,12 @@
     if (e.key === 'Escape')     closeLightbox();
   });
 
-  // 스와이프
   let touchX = 0;
   lightbox.addEventListener('touchstart', e => { touchX = e.touches[0].clientX; }, { passive: true });
-  lightbox.addEventListener('touchend', e => {
+  lightbox.addEventListener('touchend',   e => {
     const diff = touchX - e.changedTouches[0].clientX;
     if (Math.abs(diff) > 50) diff > 0 ? goNext() : goPrev();
   });
-
-  function esc(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
 
   init();
 </script>
