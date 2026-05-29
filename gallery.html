@@ -457,7 +457,7 @@
     const img = document.createElement('img');
     img.alt = f.name;
 
-    const src = thumbUrl(f, 400);
+    const src = thumbUrl(f, 250);
     if (i < 8) {
       img.src = src;
     } else {
@@ -523,7 +523,7 @@
       lbImgWrap.style.display = 'flex';
 
       // 즉시: w600 썸네일 (캐시 가능성 높음)
-      lbThumb.src = imgThumb(f.id, 600);
+      lbThumb.src = imgThumb(f.id, 400);
       lbSpinner.style.display = 'block';
 
       // 배경: w1920 고해상도
@@ -543,7 +543,7 @@
     [-1, 1].forEach(d => {
       const idx = currentIdx + d;
       if (idx >= 0 && idx < files.length && !files[idx].mimeType.startsWith('video/')) {
-        new Image().src = imgThumb(files[idx].id, 600);
+        new Image().src = imgThumb(files[idx].id, 400);
       }
     });
   }
